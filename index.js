@@ -1,9 +1,17 @@
-function isEven(n) {
-  return n % 2 === 0;
+function isEvenAsync(n) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (n % 2 === 0) {
+        resolve(true);
+      } else {
+        reject(false);
+      }
+    }, 1000);
+  });
 }
 
-function isOdd(n) {
-  return !isEven(n);
+function isTruthy(val) {
+  return !!val;
 }
 
-module.exports = { isEven, isOdd };
+module.exports = { isEvenAsync, isTruthy };
