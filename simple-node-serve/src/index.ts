@@ -1,29 +1,67 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { USER_ENDPOINT } from "../util/constants";
 
 const app = express();
 app.use(express.json());
 
-app.post(USER_ENDPOINT, (req, res) => {
-  const { username, email, password } = req.body;
+interface CustomRequest extends Request {
+  validationErrors?: Record<string, string>;
+}
 
+const validateUser = (req: CustomRequest, _: Response, next: NextFunction) => {
+  const { username } = req.body;
 
-  const validationErrors: Record<string, string> = {};
   if (!username) {
-    validationErrors["username"] = "username is required";
-  } 
-  if (!email) {
-    validationErrors["email"] = "email is required";
-  } 
-  if (!password) {
-    validationErrors["password"] = "password is required";
-  }
-  if (Object.keys(validationErrors).length) {
-    return res.status(400).send({validationErrors});
+    req.validationErrors = {};
+    req.validationErrors.username = "username is required";
   }
 
-  res.send({ message: "User registered"});
-});
+  next();
+};
+
+const validateEmail = (req: CustomRequest, _: Response, next: NextFunction) => {
+  const { email } = req.body;
+
+  if (!email) {
+    req.validationErrors = {
+      ...req.validationErrors,
+      email: "email is required",
+    };
+  }
+
+  next();
+};
+
+const validatePassword = (
+  req: CustomRequest,
+  _: Response,
+  next: NextFunction
+) => {
+  const { password } = req.body;
+
+  if (!password) {
+    req.validationErrors = {
+      ...req.validationErrors,
+      password: "password is required",
+    };
+  }
+
+  next();
+};
+
+app.post(
+  USER_ENDPOINT,
+  validateUser,
+  validateEmail,
+  validatePassword,
+  (req: CustomRequest, res) => {
+    if (req.validationErrors) {
+      return res.status(400).send({ validationErrors: req.validationErrors });
+    }
+
+    res.send({ message: "User registered" });
+  }
+);
 
 app.listen(3000, () => {
   console.log("Server ready on port 3000");
