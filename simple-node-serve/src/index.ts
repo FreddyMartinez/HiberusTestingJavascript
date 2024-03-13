@@ -1,62 +1,27 @@
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import { USER_ENDPOINT } from "../util/constants";
+import { check, validationResult } from "express-validator";
 
 const app = express();
 app.use(express.json());
 
-interface CustomRequest extends Request {
-  validationErrors?: Record<string, string>;
-}
-
-const validateUser = (req: CustomRequest, _: Response, next: NextFunction) => {
-  const { username } = req.body;
-
-  if (!username) {
-    req.validationErrors = {};
-    req.validationErrors.username = "username is required";
-  }
-
-  next();
-};
-
-const validateEmail = (req: CustomRequest, _: Response, next: NextFunction) => {
-  const { email } = req.body;
-
-  if (!email) {
-    req.validationErrors = {
-      ...req.validationErrors,
-      email: "email is required",
-    };
-  }
-
-  next();
-};
-
-const validatePassword = (
-  req: CustomRequest,
-  _: Response,
-  next: NextFunction
-) => {
-  const { password } = req.body;
-
-  if (!password) {
-    req.validationErrors = {
-      ...req.validationErrors,
-      password: "password is required",
-    };
-  }
-
-  next();
-};
-
 app.post(
   USER_ENDPOINT,
-  validateUser,
-  validateEmail,
-  validatePassword,
-  (req: CustomRequest, res) => {
-    if (req.validationErrors) {
-      return res.status(400).send({ validationErrors: req.validationErrors });
+  check("username").notEmpty().withMessage("username is required"),
+  check("email").notEmpty().withMessage("email is required"),
+  check("password").notEmpty().withMessage("password is required"),
+  (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const validationErrors: Record<string, string> = {};
+      errors.array().forEach((err) => {
+        if (err.type === "field") {
+          validationErrors[err.path] = err.msg;
+        }
+      });
+      
+      return res.status(400).send({ validationErrors });
     }
 
     res.send({ message: "User registered" });
