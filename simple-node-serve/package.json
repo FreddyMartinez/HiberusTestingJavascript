@@ -1,0 +1,15 @@
+{
+  "name": "simple-node-serve",
+  "version": "1.0.0",
+  "description": "This is a Node.js server using Express",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --watchAll --coverage"
+  },
+  "author": "Freddy",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.4.2"
+  }
+}
