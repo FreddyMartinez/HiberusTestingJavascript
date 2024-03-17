@@ -1,5 +1,6 @@
 // Function should receive an array and a callback
 // Function should apply the callback to each element in the array
+const reduceNumbers = require("../src/reduce");
 
 describe("Reduce", () => {
   it("should receive array of number and return sum of numbers", () => {
