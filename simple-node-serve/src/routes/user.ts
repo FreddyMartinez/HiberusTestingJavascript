@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { USER_ENDPOINT, USER_MESSAGES } from "../../util/constants";
 import { check, validationResult } from "express-validator";
+import { User } from "../dal/user";
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.post(
       return res.status(400).send({ validationErrors });
     }
 
+    User.create(req.body);
     res.send({ message: "User registered" });
   }
 );

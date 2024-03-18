@@ -1,6 +1,8 @@
 import request from "supertest";
 import app from "../src/app";
 import { USER_ENDPOINT, USER_MESSAGES } from "../util/constants";
+import dbInstance from "../src/dal/dabInstance";
+import { User } from "../src/dal/user";
 
 const user = {
   username: "user",
@@ -9,6 +11,14 @@ const user = {
 };
 
 const userPostRequest = (payload: Record<string, unknown>) => request(app).post(USER_ENDPOINT).send(payload); 
+
+beforeAll(async () => {
+  await dbInstance.sync();
+});
+
+beforeEach(async () => {
+  await User.destroy({ truncate: true });
+});
 
 describe("Signup endpoint", () => {
   it("should return status 200 when request is valid", (done) => {
@@ -53,6 +63,8 @@ describe("Signup endpoint", () => {
   });
 
   it("Should save user in database", async () => {
-
+    await userPostRequest(user);
+    const users = await User.findAll({ where: { email: user.email } });
+    expect(users.length).toBe(1);
   });
 });
