@@ -10,7 +10,8 @@ const user = {
   password: "somePassword",
 };
 
-const userPostRequest = (payload: Record<string, unknown>) => request(app).post(USER_ENDPOINT).send(payload); 
+const userPostRequest = (payload: Record<string, unknown>) =>
+  request(app).post(USER_ENDPOINT).send(payload);
 
 beforeAll(async () => {
   await dbInstance.sync();
@@ -22,11 +23,10 @@ beforeEach(async () => {
 
 describe("Signup endpoint", () => {
   it("should return status 200 when request is valid", (done) => {
-    userPostRequest(user)
-      .then((res) => {
-        expect(res.status).toBe(200);
-        done();
-      });
+    userPostRequest(user).then((res) => {
+      expect(res.status).toBe(200);
+      done();
+    });
   });
 
   it("should return success message when request is valid", async () => {
@@ -67,7 +67,7 @@ describe("Signup endpoint", () => {
     const users = await User.findAll({ where: { email: user.email } });
     expect(users.length).toBe(1);
   });
-  
+
   it("Should save password as a hash", async () => {
     await userPostRequest(user);
     const users = await User.findAll({ where: { email: user.email } });
@@ -75,4 +75,22 @@ describe("Signup endpoint", () => {
     const savedUser = users[0];
     expect(savedUser.password).not.toBe(user.password);
   });
+
+  it.each`
+    param         | error                      | value             | message
+    ${"username"} | ${"has less than 4 chars"} | ${"abc"}          | ${USER_MESSAGES.USERNAME_MIN_LENGTH}
+    ${"username"} | ${"exceeds 30 chars"}      | ${"a".repeat(31)} | ${USER_MESSAGES.USERNAME_MAX_LENGTH}
+    ${"email"}    | ${"is not valid email"}    | ${"abcd"}         | ${USER_MESSAGES.EMAIL_NOT_VALID}
+  `(
+    "Should return an error when $param $error",
+    async ({ param, value, message }) => {
+      const invalidUser = { ...user, [param]: value };
+      const res = await userPostRequest(invalidUser);
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toMatchObject({
+        validationErrors: { [param]: message },
+      });
+    }
+  );
+
 });

@@ -8,8 +8,20 @@ const router = Router();
 
 router.post(
   USER_ENDPOINT,
-  check("username").notEmpty().withMessage(USER_MESSAGES.USERNAME_REQ),
-  check("email").notEmpty().withMessage(USER_MESSAGES.EMAIL_REQ),
+  check("username")
+    .notEmpty()
+    .withMessage(USER_MESSAGES.USERNAME_REQ)
+    .bail()
+    .isLength({ min: 4 })
+    .withMessage(USER_MESSAGES.USERNAME_MIN_LENGTH)
+    .isLength({ max: 30 })
+    .withMessage(USER_MESSAGES.USERNAME_MAX_LENGTH),
+  check("email")
+    .notEmpty()
+    .withMessage(USER_MESSAGES.EMAIL_REQ)
+    .bail()
+    .isEmail()
+    .withMessage(USER_MESSAGES.EMAIL_NOT_VALID),
   check("password").notEmpty().withMessage(USER_MESSAGES.PASSWORD_REQ),
   async (req, res) => {
     const errors = validationResult(req);
@@ -21,7 +33,7 @@ router.post(
           validationErrors[err.path] = err.msg;
         }
       });
-      
+
       return res.status(400).send({ validationErrors });
     }
 
