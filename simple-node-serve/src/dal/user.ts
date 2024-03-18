@@ -1,10 +1,19 @@
 import dbInstance from "./dabInstance";
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 
-const User = dbInstance.define("User", {
-  username: { type: DataTypes.STRING },
-  email: { type: DataTypes.STRING },
-  password: { type: DataTypes.STRING },
-});
+class User extends Model {
+  public username!: string;
+  public email!: string;
+  public password!: string;
+}
+
+User.init(
+  {
+    username: { type: DataTypes.STRING },
+    email: { type: DataTypes.STRING },
+    password: { type: DataTypes.STRING },
+  },
+  { sequelize: dbInstance, modelName: "User" }
+);
 
 export { User };

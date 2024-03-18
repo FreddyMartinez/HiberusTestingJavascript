@@ -67,4 +67,12 @@ describe("Signup endpoint", () => {
     const users = await User.findAll({ where: { email: user.email } });
     expect(users.length).toBe(1);
   });
+  
+  it("Should save password as a hash", async () => {
+    await userPostRequest(user);
+    const users = await User.findAll({ where: { email: user.email } });
+    expect(users.length).toBe(1);
+    const savedUser = users[0];
+    expect(savedUser.password).not.toBe(user.password);
+  });
 });

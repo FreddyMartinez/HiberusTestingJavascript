@@ -2,6 +2,7 @@ import { Router } from "express";
 import { USER_ENDPOINT, USER_MESSAGES } from "../../util/constants";
 import { check, validationResult } from "express-validator";
 import { User } from "../dal/user";
+import { saveUser } from "../bll/user";
 
 const router = Router();
 
@@ -10,7 +11,7 @@ router.post(
   check("username").notEmpty().withMessage(USER_MESSAGES.USERNAME_REQ),
   check("email").notEmpty().withMessage(USER_MESSAGES.EMAIL_REQ),
   check("password").notEmpty().withMessage(USER_MESSAGES.PASSWORD_REQ),
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -24,7 +25,7 @@ router.post(
       return res.status(400).send({ validationErrors });
     }
 
-    User.create(req.body);
+    await saveUser(req.body as User);
     res.send({ message: "User registered" });
   }
 );
