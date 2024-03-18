@@ -1,16 +1,23 @@
-import { pbkdf2, randomBytes } from "crypto";
+import { genSalt, hash } from "bcrypt";
 
 export function generateSalt() {
-  return randomBytes(32).toString("hex");
+  return new Promise<string>((resolve, reject) => {
+    genSalt(10, (err, salt) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(salt);
+    });
+  });
 }
 
 export function encrypt(pasword: string, salt: string) {
   return new Promise((resolve, reject) => {
-    pbkdf2(pasword, salt, 10000, 64, "sha512", (err, derivedKey) => {
+    hash(pasword, salt, (err, derivedKey) => {
       if (err) {
         reject(err);
       }
-      resolve(derivedKey.toString("hex"));
+      resolve(derivedKey);
     });
   });
 }
