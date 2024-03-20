@@ -1,8 +1,10 @@
 import request from "supertest";
 import app from "../src/app";
-import { USER_ENDPOINT, USER_MESSAGES } from "../util/constants";
+import { USER_ENDPOINT } from "../util/constants";
 import dbInstance from "../src/dal/dabInstance";
 import { User } from "../src/dal/user";
+import { USER_MESSAGES } from "../locales/en/common.json";
+import { USER_MESSAGES as SPANISH_MESSAGES } from "../locales/es/common.json";
 
 const user = {
   username: "user",
@@ -106,4 +108,33 @@ describe("Signup endpoint", () => {
       validationErrors: { email: USER_MESSAGES.EMAIL_EXISTS },
     });
   });
+});
+
+describe("Signup endpoint in spanish", () => {
+  const userPostRequestSpanish = (payload: Record<string, unknown>) =>
+  request(app).post(USER_ENDPOINT).set("accept-language", "es").send(payload);
+
+  it.each`
+    param         | error                          | value               | message
+    ${"username"} | ${"is null"}                   | ${""}               | ${SPANISH_MESSAGES.USERNAME_REQ}
+    ${"username"} | ${"has less than 4 chars"}     | ${"abc"}            | ${SPANISH_MESSAGES.USERNAME_MIN_LENGTH}
+    ${"username"} | ${"exceeds 30 chars"}          | ${"a".repeat(31)}   | ${SPANISH_MESSAGES.USERNAME_MAX_LENGTH}
+    ${"email"}    | ${"is null"}                   | ${""}               | ${SPANISH_MESSAGES.EMAIL_REQ}
+    ${"email"}    | ${"is not valid email"}        | ${"abcd"}           | ${SPANISH_MESSAGES.EMAIL_NOT_VALID}
+    ${"password"} | ${"is null"}                   | ${""}               | ${SPANISH_MESSAGES.PASSWORD_REQ}
+    ${"password"} | ${"has less than 4 chars"}     | ${"123"}            | ${SPANISH_MESSAGES.PASSWORD_TO_SHORT}
+    ${"password"} | ${"has less than 1 uppercase"} | ${"123dd"}          | ${SPANISH_MESSAGES.PASSWORD_REQUIREMENTS}
+    ${"password"} | ${"has less than 1 lowercase"} | ${"123DD"}          | ${SPANISH_MESSAGES.PASSWORD_REQUIREMENTS}
+    ${"password"} | ${"has less than 1 number"}    | ${"AADDEFVVRsdswe"} | ${SPANISH_MESSAGES.PASSWORD_REQUIREMENTS}
+  `(
+    "Should return an error when $param $error",
+    async ({ param, value, message }) => {
+      const invalidUser = { ...user, [param]: value };
+      const res = await userPostRequestSpanish(invalidUser);
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toMatchObject({
+        validationErrors: { [param]: message },
+      });
+    }
+  );
 });

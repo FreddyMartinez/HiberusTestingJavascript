@@ -1,0 +1,14 @@
+{
+  "USER_MESSAGES": {
+    "USE_REGISTERED": "Usuario registrado",
+    "USERNAME_REQ": "Nombre de usuario es requerido",
+    "EMAIL_REQ": "email es requerido",
+    "PASSWORD_REQ": "Contraseña es requerida",
+    "USERNAME_MIN_LENGTH": "Nombre de usuario debe tener al menos 4 caracteres",
+    "USERNAME_MAX_LENGTH": "Nombre de usuario no puede exceder 30 caracteres",
+    "EMAIL_NOT_VALID": "El email no cumple con el patrón de email",
+    "PASSWORD_TO_SHORT": "La contraseña debe tener al menos 4 caracteres",
+    "PASSWORD_REQUIREMENTS": "La contraseña debe tener al menos una mayúscula, una minúscula y un número",
+    "EMAIL_EXISTS": "El email ya existe en la base de datos"
+  }
+}
