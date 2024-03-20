@@ -7,7 +7,7 @@ import { User } from "../src/dal/user";
 const user = {
   username: "user",
   email: "email@domain.com",
-  password: "somePassword",
+  password: "somePassword1",
 };
 
 const userPostRequest = (payload: Record<string, unknown>) =>
@@ -77,10 +77,14 @@ describe("Signup endpoint", () => {
   });
 
   it.each`
-    param         | error                      | value             | message
-    ${"username"} | ${"has less than 4 chars"} | ${"abc"}          | ${USER_MESSAGES.USERNAME_MIN_LENGTH}
-    ${"username"} | ${"exceeds 30 chars"}      | ${"a".repeat(31)} | ${USER_MESSAGES.USERNAME_MAX_LENGTH}
-    ${"email"}    | ${"is not valid email"}    | ${"abcd"}         | ${USER_MESSAGES.EMAIL_NOT_VALID}
+    param         | error                          | value               | message
+    ${"username"} | ${"has less than 4 chars"}     | ${"abc"}            | ${USER_MESSAGES.USERNAME_MIN_LENGTH}
+    ${"username"} | ${"exceeds 30 chars"}          | ${"a".repeat(31)}   | ${USER_MESSAGES.USERNAME_MAX_LENGTH}
+    ${"email"}    | ${"is not valid email"}        | ${"abcd"}           | ${USER_MESSAGES.EMAIL_NOT_VALID}
+    ${"password"} | ${"has less than 4 chars"}     | ${"123"}            | ${USER_MESSAGES.PASSWORD_TO_SHORT}
+    ${"password"} | ${"has less than 1 uppercase"} | ${"123dd"}          | ${USER_MESSAGES.PASSWORD_REQUIREMENTS}
+    ${"password"} | ${"has less than 1 lowercase"} | ${"123DD"}          | ${USER_MESSAGES.PASSWORD_REQUIREMENTS}
+    ${"password"} | ${"has less than 1 number"}    | ${"AADDEFVVRsdswe"} | ${USER_MESSAGES.PASSWORD_REQUIREMENTS}
   `(
     "Should return an error when $param $error",
     async ({ param, value, message }) => {

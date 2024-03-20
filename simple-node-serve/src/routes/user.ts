@@ -14,6 +14,7 @@ router.post(
     .bail()
     .isLength({ min: 4 })
     .withMessage(USER_MESSAGES.USERNAME_MIN_LENGTH)
+    .bail()
     .isLength({ max: 30 })
     .withMessage(USER_MESSAGES.USERNAME_MAX_LENGTH),
   check("email")
@@ -22,7 +23,15 @@ router.post(
     .bail()
     .isEmail()
     .withMessage(USER_MESSAGES.EMAIL_NOT_VALID),
-  check("password").notEmpty().withMessage(USER_MESSAGES.PASSWORD_REQ),
+  check("password")
+    .notEmpty()
+    .withMessage(USER_MESSAGES.PASSWORD_REQ)
+    .bail()
+    .isLength({ min: 4})
+    .withMessage(USER_MESSAGES.PASSWORD_TO_SHORT)
+    .bail()
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/)
+    .withMessage(USER_MESSAGES.PASSWORD_REQUIREMENTS),
   async (req, res) => {
     const errors = validationResult(req);
 
