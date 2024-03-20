@@ -2,7 +2,7 @@ import { Router } from "express";
 import { USER_ENDPOINT, USER_MESSAGES } from "../../util/constants";
 import { check, validationResult } from "express-validator";
 import { User } from "../dal/user";
-import { saveUser } from "../bll/user";
+import { saveUser, emailExistsInBd } from "../bll/user";
 
 const router = Router();
 
@@ -22,12 +22,19 @@ router.post(
     .withMessage(USER_MESSAGES.EMAIL_REQ)
     .bail()
     .isEmail()
-    .withMessage(USER_MESSAGES.EMAIL_NOT_VALID),
+    .withMessage(USER_MESSAGES.EMAIL_NOT_VALID)
+    .bail()
+    .custom(async (email) => {
+      const userExists = await emailExistsInBd(email);
+      if (userExists) {
+        throw new Error(USER_MESSAGES.EMAIL_EXISTS);
+      }
+    }),
   check("password")
     .notEmpty()
     .withMessage(USER_MESSAGES.PASSWORD_REQ)
     .bail()
-    .isLength({ min: 4})
+    .isLength({ min: 4 })
     .withMessage(USER_MESSAGES.PASSWORD_TO_SHORT)
     .bail()
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/)

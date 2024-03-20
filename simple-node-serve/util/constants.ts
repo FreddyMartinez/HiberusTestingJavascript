@@ -10,4 +10,5 @@ export const USER_MESSAGES = {
   EMAIL_NOT_VALID: "Email does not match email pattern",
   PASSWORD_TO_SHORT: "The password has less than 4 chars",
   PASSWORD_REQUIREMENTS: "The password need at least one lowercase, one uppercase and one number",
+  EMAIL_EXISTS: "Email already exists in database",
 };

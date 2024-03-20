@@ -11,7 +11,7 @@ class User extends Model {
 User.init(
   {
     username: { type: DataTypes.STRING },
-    email: { type: DataTypes.STRING },
+    email: { type: DataTypes.STRING, unique: true },
     password: { type: DataTypes.STRING },
     salt: { type: DataTypes.STRING },
   },

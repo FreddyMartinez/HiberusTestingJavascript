@@ -55,9 +55,9 @@ describe("Signup endpoint", () => {
     const emptyUser = {};
     const res = await userPostRequest(emptyUser);
     const validationErrors: Record<string, string> = {
-      username: "username is required",
-      email: "email is required",
-      password: "password is required",
+      username: USER_MESSAGES.USERNAME_REQ,
+      email: USER_MESSAGES.EMAIL_REQ,
+      password: USER_MESSAGES.PASSWORD_REQ,
     };
     expect(res.body).toEqual({ validationErrors });
   });
@@ -97,4 +97,13 @@ describe("Signup endpoint", () => {
     }
   );
 
+  it("Should return an error if email already exist", async () => {
+    let res = await userPostRequest(user);
+    expect(res.statusCode).toBe(200);
+    res = await userPostRequest(user);
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toMatchObject({
+      validationErrors: { email: USER_MESSAGES.EMAIL_EXISTS },
+    });
+  });
 });
