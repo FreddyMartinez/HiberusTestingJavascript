@@ -138,3 +138,19 @@ describe("Signup endpoint in spanish", () => {
     }
   );
 });
+
+describe("Signup endpoint email", () => {
+  it("should create a user as inactive", async () => {
+    await userPostRequest({...user, active: true});
+    const users = await User.findAll();
+    const lastUser = users[0];
+    expect(lastUser.active).toBe(false);
+  });
+
+  it("should create an activation token", async () => {
+    await userPostRequest(user);
+    const users = await User.findAll();
+    const lastUser = users[0];
+    expect(lastUser.activationToken).toBeTruthy();
+  });
+});

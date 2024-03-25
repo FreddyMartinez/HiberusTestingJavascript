@@ -6,6 +6,8 @@ class User extends Model {
   public email!: string;
   public password!: string;
   public salt!: string;
+  public active!: boolean;
+  public activationToken!: string;
 }
 
 User.init(
@@ -14,6 +16,8 @@ User.init(
     email: { type: DataTypes.STRING, unique: true },
     password: { type: DataTypes.STRING },
     salt: { type: DataTypes.STRING },
+    active: { type: DataTypes.BOOLEAN, defaultValue: false },
+    activationToken: { type: DataTypes.STRING },
   },
   { sequelize: dbInstance, modelName: "User" }
 );
