@@ -5,6 +5,8 @@ import dbInstance from "../src/dal/dabInstance";
 import { User } from "../src/dal/user";
 import { USER_MESSAGES } from "../locales/en/common.json";
 import { USER_MESSAGES as SPANISH_MESSAGES } from "../locales/es/common.json";
+import nodemailerStub from "nodemailer-stub";
+import * as email from "../src/services/email";
 
 const user = {
   username: "user",
@@ -152,5 +154,25 @@ describe("Signup endpoint email", () => {
     const users = await User.findAll();
     const lastUser = users[0];
     expect(lastUser.activationToken).toBeTruthy();
+  });
+
+  it("should send an email with activation token", async() => {
+    await userPostRequest(user);
+    const lastMail = nodemailerStub.interactsWithMail.lastMail();
+    expect(lastMail.to).toContain(user.email);
+    const users = await User.findAll();
+    const lastUser = users[0];
+    expect(lastMail.content).toContain(lastUser.activationToken);
+  });
+
+  it("should return an error message when email is not sent and not save user", async () => {
+    const mockSendEmail = jest.spyOn(email, "sendEmail").mockRejectedValue({ message: "Email failed"});
+
+    const response = await userPostRequest(user);
+    expect(response.status).toBe(502);
+    expect(response.body).toEqual({ message: USER_MESSAGES.ERROR_SENDING_EMAIL });
+    const users = await User.findAll();
+    expect(users.length).toBe(0);
+    mockSendEmail.mockRestore();
   });
 });

@@ -3,6 +3,7 @@ import { USER_ENDPOINT } from "../../util/constants";
 import { check, validationResult } from "express-validator";
 import { User } from "../dal/user";
 import { saveUser, emailExistsInBd } from "../bll/user";
+import { EmailError } from "../../util/errors";
 
 const router = Router();
 
@@ -53,8 +54,14 @@ router.post(
       return res.status(400).send({ validationErrors });
     }
 
-    await saveUser(req.body as User);
-    res.send({ message: "User registered" });
+    try {
+      await saveUser(req.body as User);
+      res.send({ message: "User registered" });
+    } catch (error) {
+      if(error instanceof EmailError) {
+        res.status(502).send({ message: req.t(error.message) });
+      }
+    }
   }
 );
 
