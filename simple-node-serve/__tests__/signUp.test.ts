@@ -5,8 +5,8 @@ import dbInstance from "../src/dal/dabInstance";
 import { User } from "../src/dal/user";
 import { USER_MESSAGES } from "../locales/en/common.json";
 import { USER_MESSAGES as SPANISH_MESSAGES } from "../locales/es/common.json";
-import nodemailerStub from "nodemailer-stub";
 import * as email from "../src/services/email";
+import { SMTPServer } from "smtp-server";
 
 const user = {
   username: "user",
@@ -14,15 +14,43 @@ const user = {
   password: "somePassword1",
 };
 
+let lastEmail = "";
+let server: SMTPServer;
+
+const setupSMTPServer = () => {
+  server = new SMTPServer({
+    authOptional: true,
+    onData(stream, session, callback) {
+      let message = "";
+      stream.on("data", (data) => {
+        message += data;
+      });
+      stream.on("end", () => {
+        lastEmail = message;
+        callback();
+      });
+    },
+  });
+
+  server.listen(8081, () => {
+    console.log("SMTP server started on port 8081");
+  });
+};
+
 const userPostRequest = (payload: Record<string, unknown>) =>
   request(app).post(USER_ENDPOINT).send(payload);
 
 beforeAll(async () => {
+  setupSMTPServer();
   await dbInstance.sync();
 });
 
 beforeEach(async () => {
   await User.destroy({ truncate: true });
+});
+
+afterAll(() => {
+  server.close();
 });
 
 describe("Signup endpoint", () => {
@@ -158,11 +186,10 @@ describe("Signup endpoint email", () => {
 
   it("should send an email with activation token", async() => {
     await userPostRequest(user);
-    const lastMail = nodemailerStub.interactsWithMail.lastMail();
-    expect(lastMail.to).toContain(user.email);
+    expect(lastEmail).toContain(user.email);
     const users = await User.findAll();
     const lastUser = users[0];
-    expect(lastMail.content).toContain(lastUser.activationToken);
+    expect(lastEmail).toContain(lastUser.activationToken);
   });
 
   it("should return an error message when email is not sent and not save user", async () => {
