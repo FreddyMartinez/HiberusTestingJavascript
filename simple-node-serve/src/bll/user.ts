@@ -27,4 +27,15 @@ async function emailExistsInBd(email: string) {
   return !!user;
 }
 
-export { saveUser, emailExistsInBd };
+async function activateUser(token: string) {
+  const user = await User.findOne({ where: { activationToken: token } });
+  if(!user) {
+    throw new Error("USER_MESSAGES.ACTIVATION_TOKEN_NOT_VALID");
+  }
+
+  user.active = true;
+  user.activationToken = '';
+  await user.save();
+}
+
+export { saveUser, emailExistsInBd, activateUser };

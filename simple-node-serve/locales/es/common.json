@@ -10,6 +10,8 @@
     "PASSWORD_TO_SHORT": "La contraseña debe tener al menos 4 caracteres",
     "PASSWORD_REQUIREMENTS": "La contraseña debe tener al menos una mayúscula, una minúscula y un número",
     "EMAIL_EXISTS": "El email ya existe en la base de datos",
-    "ERROR_SENDING_EMAIL": "Error al enviar el email"
+    "ERROR_SENDING_EMAIL": "Error al enviar el email",
+    "ACTIVATION_SUCCESSFUL": "Activación exitosa",
+    "ACTIVATION_TOKEN_NOT_VALID": "Token de activación no válido"
   }
 }

@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../src/app";
-import { USER_ENDPOINT } from "../util/constants";
+import { ACCOUNT_ACTIVATION_ENDPOINT, USER_ENDPOINT } from "../util/constants";
 import dbInstance from "../src/dal/dabInstance";
 import { User } from "../src/dal/user";
 import { USER_MESSAGES } from "../locales/en/common.json";
@@ -36,6 +36,14 @@ const setupSMTPServer = () => {
     console.log("SMTP server started on port 8081");
   });
 };
+
+const activationReqWithLang = (lang: string) => (token: string) =>
+  request(app)
+    .post(`${ACCOUNT_ACTIVATION_ENDPOINT}/${token}`)
+    .set("accept-language", lang)
+    .send();
+
+const accountActivationRequest = activationReqWithLang("");
 
 const userPostRequest = (payload: Record<string, unknown>) =>
   request(app).post(USER_ENDPOINT).send(payload);
@@ -201,5 +209,52 @@ describe("Signup endpoint email", () => {
     const users = await User.findAll();
     expect(users.length).toBe(0);
     mockSendEmail.mockRestore();
+  });
+});
+
+describe("Signup endpoint activated account", () => {
+  it("should activate account when token is provided and exists", async () => {
+    await userPostRequest(user);
+    const saveUser = (await User.findAll())[0];
+    const userToken = saveUser.activationToken;
+    const res = await accountActivationRequest(userToken);
+    expect(res.status).toBe(200);
+    const updatedUser = (await User.findAll())[0];
+    expect(updatedUser.active).toBe(true);
+  });
+
+  it.each`
+    status       | language | message                                        | statusResponse
+    ${"correct"} | ${"en"}  | ${USER_MESSAGES.ACTIVATION_SUCCESSFUL}         | ${200}
+    ${"correct"} | ${"es"}  | ${SPANISH_MESSAGES.ACTIVATION_SUCCESSFUL}      | ${200}
+    ${"wrong"}   | ${"en"}  | ${USER_MESSAGES.ACTIVATION_TOKEN_NOT_VALID}    | ${400}
+    ${"wrong"}   | ${"es"}  | ${SPANISH_MESSAGES.ACTIVATION_TOKEN_NOT_VALID} | ${400}
+  `(
+    
+    "should return $statusResponse with message '$message' when activation token is $status",
+    async ({status, language, statusResponse, message}) => {
+      await userPostRequest(user);
+      let token = "noexisttoken";
+
+      if (status === "correct") {
+        const saveUser = (await User.findAll())[0];
+        token = saveUser.activationToken;
+      }
+
+      const res = await activationReqWithLang(language)(token);
+      expect(res.status).toBe(statusResponse);
+      expect(res.body).toMatchObject({
+        message,
+      });
+    }
+  );
+
+  it("should remove token from user when activation is successful", async () => {
+    await userPostRequest(user);
+    const saveUser = (await User.findAll())[0];
+    const userToken = saveUser.activationToken;
+    await accountActivationRequest(userToken);
+    const updatedUser = (await User.findAll())[0];
+    expect(updatedUser.activationToken).toBe("");
   });
 });

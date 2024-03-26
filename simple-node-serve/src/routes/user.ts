@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { USER_ENDPOINT } from "../../util/constants";
+import { ACCOUNT_ACTIVATION_ENDPOINT, USER_ENDPOINT } from "../../util/constants";
 import { check, validationResult } from "express-validator";
 import { User } from "../dal/user";
-import { saveUser, emailExistsInBd } from "../bll/user";
+import { saveUser, emailExistsInBd, activateUser } from "../bll/user";
 import { EmailError } from "../../util/errors";
 
 const router = Router();
@@ -64,5 +64,17 @@ router.post(
     }
   }
 );
+
+router.post(`${ACCOUNT_ACTIVATION_ENDPOINT}/:token`, async (req, res) => {
+  const token = req.params.token;
+  try {
+    await activateUser(token);
+    res.send({message: req.t("USER_MESSAGES.ACTIVATION_SUCCESSFUL")});
+  } catch(error){
+    if (error instanceof Error) {
+      res.status(400).send({ message: req.t(error.message) });
+    }
+  }
+});
 
 export { router as userRouter };
