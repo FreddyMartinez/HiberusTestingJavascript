@@ -12,6 +12,7 @@
     "EMAIL_EXISTS": "El email ya existe en la base de datos",
     "ERROR_SENDING_EMAIL": "Error al enviar el email",
     "ACTIVATION_SUCCESSFUL": "Activación exitosa",
-    "ACTIVATION_TOKEN_NOT_VALID": "Token de activación no válido"
+    "ACTIVATION_TOKEN_NOT_VALID": "Token de activación no válido",
+    "LOGIN_OK": "Inicio de sesión exitoso"
   }
 }

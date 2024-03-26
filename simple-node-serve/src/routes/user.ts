@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ACCOUNT_ACTIVATION_ENDPOINT, USER_ENDPOINT } from "../../util/constants";
+import { ACCOUNT_ACTIVATION_ENDPOINT, LOGIN_URL, USER_ENDPOINT } from "../../util/constants";
 import { check, validationResult } from "express-validator";
 import { User } from "../dal/user";
 import { saveUser, emailExistsInBd, activateUser } from "../bll/user";
@@ -76,5 +76,27 @@ router.post(`${ACCOUNT_ACTIVATION_ENDPOINT}/:token`, async (req, res) => {
     }
   }
 });
+
+router.post(
+  LOGIN_URL,
+  check("email").notEmpty().withMessage("USER_MESSAGES.EMAIL_REQ"),
+  check("password").notEmpty().withMessage("USER_MESSAGES.PASSWORD_REQ"),
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    if (errors.isEmpty()) {
+      return res.send({ message: req.t("USER_MESSAGES.LOGIN_OK") });
+    }
+
+    const validationErrors: Record<string, string> = {};
+    errors.array().forEach((err) => {
+      if (err.type === "field") {
+        validationErrors[err.path] = req.t(err.msg);
+      }
+    });
+
+    res.status(400).send({ validationErrors });
+  }
+);
 
 export { router as userRouter };
